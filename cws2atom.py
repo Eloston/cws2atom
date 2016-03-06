@@ -14,7 +14,7 @@ import copy
 
 import pyatom
 
-def get_comments(extension_id, group):
+def get_comments(extension_id, group, num_results):
     request_url = "https://chrome.google.com/reviews/components"
     request_values = {
         "appId": 94,
@@ -28,7 +28,7 @@ def get_comments(extension_id, group):
                 "groups": group,
                 "sortby": "date",
                 "startindex": "0",
-                "numresults": "100",
+                "numresults": str(num_results),
                 "id": "1"
             }
         ],
@@ -45,7 +45,7 @@ def get_comments(extension_id, group):
         matches = re.match(r"window\.google\.annotations2\.component\.load\(\{'1':\{'results':\{\"annotations\":\[(?P<reviews>.+)\]\,\"numAnnotations\":[0-9]+\,\"numAnnotationsAccuracy\":[0-9]+\,", response_data)
         return json.loads("[" + matches.group("reviews") + "]")
 
-def get_comment_replies(extension_id, comment_list):
+def get_comment_replies(extension_id, comment_list, num_results=100):
     request_url = "https://chrome.google.com/reviews/json/search"
     search_query_template =             {
         "requireComment": True,
@@ -60,7 +60,7 @@ def get_comment_replies(extension_id, comment_list):
         ],
         "matchExtraGroups": True,
         "startIndex": 0,
-        "numResults": 100,
+        "numResults": num_results,
         "includeNicknames": True
     }
     request_values = {
@@ -85,8 +85,8 @@ def get_comment_replies(extension_id, comment_list):
         response_data = response.read().decode(response_encoding)
         return json.loads(response_data)
 
-def get_all_webstore_data(extension_id):
-    comment_list = get_comments(extension_id, "chrome_webstore") + get_comments(extension_id, "chrome_webstore_support")
+def get_all_webstore_data(extension_id, num_results):
+    comment_list = get_comments(extension_id, "chrome_webstore", num_results) + get_comments(extension_id, "chrome_webstore_support", num_results)
     comment_replies = get_comment_replies(extension_id, comment_list)
     comments_with_replies_count = 0
     for comment in comment_list:
@@ -119,7 +119,11 @@ if __name__ == "__main__":
 
     feed = init_feed()
 
-    comments_with_replies_list = get_all_webstore_data(extension_id)
+    num_results = 100
+    if len(sys.argv) > 2:
+        num_results = int(sys.argv[2])
+
+    comments_with_replies_list = get_all_webstore_data(extension_id, num_results)
 
     for comment in comments_with_replies_list:
         if "displayName" in comment["entity"]:
@@ -132,7 +136,7 @@ if __name__ == "__main__":
                     content="<p>Comment: " + comment["comment"] + "</p>",
                     content_type="html",
                     updated=datetime.datetime.utcfromtimestamp(comment["timestamp"]),
-                    url="https://chrome.google.com/webstore/detail/" + extension_id,
+                    url="https://chrome.google.com/webstore/detail/" + extension_id + "/reviews",
                     id="review" + str(comment["timestamp"]) + comment["entity"]["shortAuthor"] + comment["comment"]
             )
             if "cws2atom_replies" in comment:
@@ -145,7 +149,7 @@ if __name__ == "__main__":
                             content="<p>Comment reply: " + comment_reply["comment"] + "</p>",
                             content_type="html",
                             updated=datetime.datetime.utcfromtimestamp(comment_reply["timestamp"]),
-                            url="https://chrome.google.com/webstore/detail/" + extension_id,
+                            url="https://chrome.google.com/webstore/detail/" + extension_id + "/reviews",
                             id="review_reply" + str(comment_reply["timestamp"]) + comment_reply["entity"]["shortAuthor"] + comment_reply["comment"]
                     )
         elif "chrome_webstore_support" in comment["entity"]["groups"]:
@@ -156,7 +160,7 @@ if __name__ == "__main__":
                         + "<p>Comment: " + comment["comment"] + "</p>",
                     content_type="html",
                     updated=datetime.datetime.utcfromtimestamp(comment["timestamp"]),
-                    url="https://chrome.google.com/webstore/detail/" + extension_id,
+                    url="https://chrome.google.com/webstore/detail/" + extension_id + "/support",
                     id="support" + str(comment["timestamp"]) + comment["entity"]["shortAuthor"] + comment["comment"]
             )
             if "cws2atom_replies" in comment:
@@ -169,7 +173,7 @@ if __name__ == "__main__":
                             content="<p>Comment reply: " + comment_reply["comment"] + "</p>",
                             content_type="html",
                             updated=datetime.datetime.utcfromtimestamp(comment_reply["timestamp"]),
-                            url="https://chrome.google.com/webstore/detail/" + extension_id,
+                            url="https://chrome.google.com/webstore/detail/" + extension_id + "/support",
                             id="support_reply" + str(comment_reply["timestamp"]) + comment_reply["entity"]["shortAuthor"] + comment_reply["comment"]
                     )
 

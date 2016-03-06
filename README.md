@@ -3,7 +3,7 @@ cws2atom
 
 A script to retrieve Chrome Webstore reviews and support feedback and output them as an [Atom feed](https://en.wikipedia.org/wiki/Atom_(standard)) to standard output
 
-It will only grab the latest 100 reviews and support feedback in all languages.
+It will grab reviews and support feedback in all languages, including replies.
 
 Requirements
 ------------
@@ -19,7 +19,7 @@ python3 cws2atom.py EXTENSION_ID [NUM_RESULTS]
 ```
 where:
 * EXTENSION_ID is the extension's ID on the Chrome Webstore, e.g. `efdhoaajjjgckpbkoglidkeendpkolai`
-* NUM_RESULTS is an optional parameter specifying the number of reviews to download and the number of support posts to download. The default is 100, which seems to be the maximum that the Chrome Webstore will take.
+* NUM_RESULTS is an optional parameter specifying the number of reviews to download and the number of support posts to download. Reviews and support posts are ordered in descending order of time, so only the beginning NUM_RESULTS are selected. The default is 100, which seems to be the maximum that the Chrome Webstore will take.
 
 The Atom feed will be written to standard output.
 

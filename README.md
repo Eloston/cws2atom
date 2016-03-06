@@ -1,7 +1,7 @@
 cws2atom
 ========
 
-A script to retrieve Chrome Webstore reviews and support feedback and output them as an [Atom feed](https://en.wikipedia.org/wiki/Atom_(standard)) to standard output
+A script to generate an [Atom feed](https://en.wikipedia.org/wiki/Atom_(standard)) from Chrome Web Store reviews and support feedback
 
 It will grab reviews and support feedback in all languages, including replies.
 

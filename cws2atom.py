@@ -71,7 +71,7 @@ def get_comment_replies(extension_id, comment_list, num_results=100):
     id_to_index = dict()
     
     for comment in comment_list:
-        if "replyExists" in comment["attributes"] and comment["attributes"]["replyExists"] is True:
+        if "attributes" in comment and "replyExists" in comment["attributes"] and comment["attributes"]["replyExists"] is True:
             search_query = copy.deepcopy(search_query_template)
             search_query["entities"][0]["annotation"]["author"] = comment["entity"]["author"]
             search_query["entities"][0]["annotation"]["groups"] = comment["entity"]["groups"]
@@ -90,7 +90,7 @@ def get_all_webstore_data(extension_id, num_results):
     comment_replies = get_comment_replies(extension_id, comment_list)
     comments_with_replies_count = 0
     for comment in comment_list:
-        if comment["attributes"].get("replyExists", False) is True and comment_replies["searchResults"][comments_with_replies_count]["numAnnotations"] > 0:
+        if comment.get("attributes", {}).get("replyExists", False) is True and comment_replies["searchResults"][comments_with_replies_count]["numAnnotations"] > 0:
             comment["cws2atom_replies"] = comment_replies["searchResults"][comments_with_replies_count]["annotations"]
             comments_with_replies_count += 1
     return comment_list
